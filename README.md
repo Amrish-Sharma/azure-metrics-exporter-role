@@ -1,0 +1,1 @@
+# azure-metrics-exporter-role
