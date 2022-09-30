@@ -1,0 +1,14 @@
+---
+
+azure_metrics_exporter_service_enabled: true
+azure_metrics_exporter_service_state: 'started'
+azure_metrics_exporter_force_install: false
+azure_metrics_exporter_service_name: 'prometheus-azure-metrics-exporter'
+azure_metrics_exporter_system_group: 'am_exp'
+azure_metrics_exporter_system_user: 'am_exp'
+azure_metrics_exporter_version: '22.9.0'
+azure_metrics_exporter_web_listen_address: '0.0.0.0'
+azure_metrics_exporter_web_listen_port: '2100'
+azure_metrics_exporter_config_path: '/etc/{{ azure_metrics_exporter_service_name }}/config.yml'
+azure_metrics_exporter_config: {}
+

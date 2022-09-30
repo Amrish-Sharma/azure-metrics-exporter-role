@@ -1,0 +1,19 @@
+---
+
+- name: 'Set required facts'
+  import_tasks: 'set_facts.yml'
+  tags: 'always'
+
+- name: 'Check installation'
+  import_tasks: 'install.yml'
+  tags: 'install'
+  become: true
+
+- name: 'Check Azure Metrics Exporter service status'
+  service:
+    name: '{{ azure_metrics_exporter_service_name }}'
+    state: '{{ azure_metrics_exporter_service_state }}'
+    enabled: '{{ azure_metrics_exporter_service_enabled }}'
+  become: true
+  tags:
+    - 'always'

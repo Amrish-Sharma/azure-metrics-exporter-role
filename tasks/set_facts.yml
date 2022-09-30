@@ -1,0 +1,28 @@
+---
+
+- name: 'Set Facts | Get required fact'
+  setup:
+
+- name: 'Set Facts | Fail on unsupported init systems'
+  assert:
+    that: 'ansible_service_mgr == "systemd"'
+    fail_msg: 'Using init.d scirpt, not a systemd OS'
+
+- name: 'Set Facts | Include main variables'
+  include_vars:
+    file: 'main.yml'
+    name: 'azure_metrics_exporter_common'
+
+- name: 'Set Facts | Set architecture variable if presents in var file'
+  set_fact:
+    azure_metrics_exporter_arch: '{{ azure_metrics_exporter_common.go_arch_map[ansible_architecture] }}'
+  when: 'azure_metrics_exporter_common.go_arch_map[ansible_architecture] is defined'
+
+- name: 'Set Facts | Set architecture variable if does not present in var file'
+  set_fact:
+    azure_metrics_exporter_arch: '{{ ansible_architecture }}'
+  when: 'azure_metrics_exporter_common.go_arch_map[ansible_architecture] is not defined'
+
+- name: 'Set Facts | Set all required facts.'
+  set_fact:
+    azure_metrics_exporter_tar_url: '{{ azure_metrics_exporter_common.base_url }}/azure-metrics-exporter.linux.amd64'

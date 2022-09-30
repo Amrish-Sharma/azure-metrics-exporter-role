@@ -1,0 +1,19 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=Prometheus Azure Metrics Exporter
+After=network.target
+
+[Service]
+Type=simple
+User={{ azure_metrics_exporter_system_user }}
+Group={{ azure_metrics_exporter_system_group }}
+Nice=-5
+SyslogIdentifier={{ azure_metrics_exporter_service_name }}
+Restart=always
+ExecStart=/usr/local/bin/azure_metrics_exporter \
+  --log.trace \
+  --server.bind=localhost:{{ azure_metrics_exporter_web_listen_port }}
+
+[Install]
+WantedBy=multi-user.target

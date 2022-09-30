@@ -1,0 +1,74 @@
+---
+
+- name: 'Install | Create the azure_metrics_exporter group'
+  group:
+    name: '{{ azure_metrics_exporter_system_group }}'
+    state: 'present'
+    system: true
+
+- name: 'Install | Create the azure_metrics_exporter user'
+  user:
+    name: '{{ azure_metrics_exporter_system_user }}'
+    groups: '{{ azure_metrics_exporter_system_group }}'
+    append: true
+    shell: '/usr/sbin/nologin'
+    system: true
+    createhome: false
+
+- name: 'Check installation'
+  stat:
+    path: '/usr/local/bin/azure_metrics_exporter'
+  register: '_installation'
+
+- name: 'Installation block'
+  block:
+
+    - name: 'Install | Download azure_metrics_exporter binary to local folder'
+      get_url:
+        url: '{{ azure_metrics_exporter_tar_url }}'
+        dest: '/tmp/azure-metrics_exporter-{{ azure_metrics_exporter_version }}'
+      register: '_download_binary'
+      until: '_download_binary is succeeded'
+      retries: 5
+      delay: 2
+      delegate_to: 'localhost'
+      become: false
+
+    - name: 'Install | Propagate azure_metrics_exporter binaries'
+      copy:
+        src: '/tmp/azure-metrics_exporter-{{ azure_metrics_exporter_version }}'
+        dest: '/usr/local/bin/azure_metrics_exporter'
+        mode: 0750
+        owner: 'root'
+        group: '{{ azure_metrics_exporter_system_group }}'
+      notify: 'restart azure_metrics_exporter'
+
+  check_mode: false
+  when: 'not _installation.stat.exists or azure_metrics_exporter_force_install'
+
+- name: 'Install | Copy the Azure Metrics Exporter systemd service file'
+  template:
+    src: 'azure_metrics_exporter.service.j2'
+    dest: '/etc/systemd/system/{{ azure_metrics_exporter_service_name }}.service'
+    owner: 'root'
+    group: 'root'
+    mode: 0644
+  notify:
+    - 'restart azure_metrics_exporter'
+
+- name: 'Install | Allow Azure Metrics Exporter port in SELinux on RedHat OS family'
+  seport:
+    ports: '{{ azure_metrics_exporter_web_listen_port }}'
+    proto: 'tcp'
+    setype: 'http_port_t'
+    state: 'present'
+  when:
+    - 'ansible_selinux.status == "enabled"'
+
+- name: 'Install | Add Azure Metrics exporter port to iptables'
+  ansible.builtin.iptables:
+    chain: 'INPUT'
+    protocol: 'tcp'
+    destination_port: '{{ azure_metrics_exporter_web_listen_port }}'
+    jump: 'ACCEPT'
+    comment: 'Accept connection to Azure Metrics exporter'

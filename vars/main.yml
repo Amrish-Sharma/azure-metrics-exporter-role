@@ -1,0 +1,7 @@
+---
+
+go_arch_map:
+  x86_64: 'amd64'
+
+base_url: 'https://github.com/webdevops/azure-metrics-exporter/releases/download/{{ azure_metrics_exporter_version }}'
+

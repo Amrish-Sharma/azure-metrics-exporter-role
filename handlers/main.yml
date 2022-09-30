@@ -1,0 +1,11 @@
+---
+
+- name: 'restart azure_metrics_exporter'
+  systemd:
+    daemon_reload: true
+    name: '{{ azure_metrics_exporter_service_name }}'
+    state: 'restarted'
+  when:
+    - 'azure_metrics_exporter_service_state != "stopped"'
+    - 'ansible_service_mgr == "systemd"'
+  become: true
